@@ -1,0 +1,25 @@
+{
+    "name": "lle/pdf-report-bundle",
+    "description": "Convert ireport file to pdf in pure php",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "2le",
+            "email": "2le@2le.net"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php" : ">=5.3.0",
+        "symfony/http-foundation" : ">=2.3",
+        "Symfony/http-kernel"  : ">=2.3",
+        "symfony/event-dispatcher" : ">=2.3",
+        "symfony/twig-bundle": ">=2.3"
+    },
+    "require-dev" : {
+    },
+    "autoload": {
+        "psr-4": { "Lle\\PdfReportBundle\\": "" }
+    }
+
+}
