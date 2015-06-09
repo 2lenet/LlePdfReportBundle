@@ -19,7 +19,7 @@
     "require-dev" : {
     },
     "autoload": {
-        "psr-4": { "Lle\\PdfReportBundle\\": "" }
-    }
-
-}
+        "psr-0": { "Lle\\PdfReportBundle": "" }
+    },
+    "target-dir": "Lle/PdfReportBundle",
+}  
