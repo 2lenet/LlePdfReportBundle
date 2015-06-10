@@ -3,12 +3,15 @@
 namespace Lle\PdfReportBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * Modele
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Lle\PdfReportBundle\Entity\ModeleRepository")
+ * @Gedmo\Uploadable(path="uploads/modele", filenameGenerator="ALPHANUMERIC", allowOverwrite=true)
+ *
  */
 class Modele
 {
@@ -31,10 +34,18 @@ class Modele
     /**
      * @var string
      *
-     * @ORM\Column(name="file", type="string", length=50)
+     * @ORM\Column(name="filename", type="string")
+     * @Gedmo\UploadableFileName
      */
-    private $file;
+    private $filename;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="filepath", type="string")
+     * @Gedmo\UploadableFilePath
+     */
+    private $filepath;
 
     /**
      * Get id
@@ -70,25 +81,48 @@ class Modele
     }
 
     /**
-     * Set file
+     * Set filename
      *
-     * @param string $file
+     * @param string $filename
      * @return Modele
      */
-    public function setFile($file)
+    public function setFilename($filename)
     {
-        $this->file = $file;
+        $this->filename = $filename;
 
         return $this;
     }
 
     /**
-     * Get file
+     * Get filename
      *
      * @return string 
      */
-    public function getFile()
+    public function getFilename()
     {
-        return $this->file;
+        return $this->filename;
+    }
+
+    /**
+     * Set filepath
+     *
+     * @param string $filepath
+     * @return Modele
+     */
+    public function setFilepath($filepath)
+    {
+        $this->filepath = $filepath;
+
+        return $this;
+    }
+
+    /**
+     * Get filepath
+     *
+     * @return string 
+     */
+    public function getFilepath()
+    {
+        return $this->filepath;
     }
 }
