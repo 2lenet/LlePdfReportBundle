@@ -1,0 +1,4 @@
+llepdfreportbundle_modele_admin_list:
+    resource: @LlePdfReportBundle/Controller/ModeleAdminListController.php
+    type:     annotation
+    prefix:   /admin/
