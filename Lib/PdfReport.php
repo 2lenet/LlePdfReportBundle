@@ -1,8 +1,7 @@
 <?php
+namespace Lle\PdfReportBundle\Lib;
 
-require_once sfConfig::get('sf_root_dir') . '/lib/tcpdf/tcpdf.php';
-
-class pdfReport extends TCPDF {
+class PdfReport extends \TCPDF {
 
     public function __construct($xml_report_string) {
 
@@ -16,8 +15,8 @@ class pdfReport extends TCPDF {
         $encoding = 'utf-8';
         $this->decX = 0;
         parent::__construct($orientation, $unit, $format, $unicode, $encoding);
-        $this->SetFont('verdana');
-        $this->SetFont('verdanab','B',10);
+        $this->SetFont('helvetica');
+        $this->SetFont('helvetica','B',10);
         //$this->setMargins(intval($this->rdata['leftMargin']),intval($this->rdata['topMargin']),intval($this->rdata['rightMargin']),1);
         $this->setMargins(intval($this->rdata['leftMargin']),0,intval($this->rdata['rightMargin']),1);
         $this->bottomMargin = intval($this->rdata['bottomMargin']);
@@ -49,7 +48,7 @@ class pdfReport extends TCPDF {
     }
 
     public function load($xml_report_string) {
-      $rdata = new SimpleXMLElement($xml_report_string);
+      $rdata = new \SimpleXMLElement($xml_report_string);
       $this->rdata = $rdata;
     }
 
@@ -109,6 +108,8 @@ class pdfReport extends TCPDF {
 			    - $this->rdata->columnFooter->band['height']
 			    - $this->rdata->pageFooter->band['height']
 			    - $this->rdata->lastPageFooter->band['height'] -1;
+            } else {
+                $maxY=0;
             }
             $this->generateGroupItem('detail', null, $maxY);
             $i++;
@@ -225,7 +226,7 @@ class pdfReport extends TCPDF {
             list($old_rdata, $old_datacoll, $old_dataobj) = array($this->rdata, $this->dataColl, $this->dataObj);
 
             // switch context
-            $subrdata = new SimpleXMLElement(file_get_contents($filename));
+            $subrdata = new \SimpleXMLElement(file_get_contents($filename));
             $this->rdata = $subrdata;
 	    if (substr($key[0],0,1)=='#') {
 		$this->dataColl = $this->vars[substr($key,1)];
@@ -273,17 +274,17 @@ class pdfReport extends TCPDF {
 
         // champs de relation ( Client.nom )
         if (count($fieldArr) > 1) {
-            if ($obj->relatedExists(sfInflector::camelize($fieldArr[0]))) {
-                $method = 'get' . sfInflector::camelize($fieldArr[0]);
+            #if ($obj->relatedExists($this->to_camel_case($fieldArr[0]))) {
+                $method = 'get' . $this->to_camel_case($fieldArr[0]);
                 $data_obj = call_user_func(array($obj, $method));
                 try { 
                     return $this->getFieldData("{" . $fieldArr[1] . "}", $data_obj);
                 } catch(Exception $e) {
                     return "";
                 }  
-            } else {
-                return "";
-            }
+            #} else {
+            #    return "";
+            #}
         }
 
         if (substr($field, 0,4) == 'date') {
@@ -305,21 +306,12 @@ class pdfReport extends TCPDF {
             }
             return $data;
         }
-        $method = 'get' . sfInflector::camelize($field);
-        //print $method;
+        $method = 'get' . $this->to_camel_case($field);
 
         if (method_exists($obj, $method)) {
             $data = call_user_func(array($obj, $method));
         } else {
-            try {
-                if($obj) {
-                   $data = $obj->get($field);
-                } else {
-                   $data = $field;
-                }
-            } catch (Doctrine_Record_UnknownPropertyException $e) {
-                $data = (string) $obj . '->' . $method ;//. '-' . $e;
-            }
+            $data = (string) $obj . '->' . $method ;//. '-' . $e;
         }
         if ($pattern == '€' || $pattern =='€2') {
             return @number_format($data, 2, ',',' ');
@@ -332,6 +324,9 @@ class pdfReport extends TCPDF {
         } else {
             return $exp;
         }
+    }
+
+    public function generateBreak($item) {
     }
 
     public function generateTextField($item) {
@@ -375,7 +370,7 @@ class pdfReport extends TCPDF {
                 $style .='U';
             }
         }
-        $this->setFont('verdana',$style, $size);
+        $this->setFont('helvetica',$style, $size);
     }
 
     public function getAlign($item) {
@@ -396,10 +391,8 @@ class pdfReport extends TCPDF {
         }
         
         $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $item->imageExpression)));
-        $image = sfConfig::get('sf_root_dir') . '/data/reports/'.$image_name;
-        if (!is_file($image)) {
-            $image = sfConfig::get('sf_web_dir') . '/images/' . $image_name;
-        }
+
+        $image = 'images/' . $image_name;
 
         if (is_file($image)) {
             $this->Image($image, $x, $y, $item->reportElement['width']);
@@ -612,6 +605,27 @@ class pdfReport extends TCPDF {
         $this->javascript = $script;
     }
 
+    function from_camel_case($str) {
+        $str[0] = strtolower($str[0]);
+        $func = create_function('$c', 'return "_" . strtolower($c[1]);');
+        return preg_replace_callback('/([A-Z])/', $func, $str);
+    }
+
+    /**
+     *  * Translates a string with underscores
+     *   * into camel case (e.g. first_name -> firstName)
+     *    *
+     *     * @param string $str String in underscore format
+     *      * @param bool $capitalise_first_char If true, capitalise the first char in $str
+     *       * @return string $str translated into camel caps
+     *        */
+    function to_camel_case($str, $capitalise_first_char = false) {
+        if($capitalise_first_char) {
+            $str[0] = strtoupper($str[0]);
+        }
+        $func = create_function('$c', 'return strtoupper($c[1]);');
+        return preg_replace_callback('/_([a-z])/', $func, $str);
+    }
     function _putjavascript() {
         $this->_newobj();
         $this->n_js = $this->n;
@@ -650,20 +664,20 @@ class pdfReport extends TCPDF {
     }
 
     function hex2rgb($hex) {
-   $hex = str_replace("#", "", $hex);
+        $hex = str_replace("#", "", $hex);
 
-   if(strlen($hex) == 3) {
-      $r = hexdec(substr($hex,0,1).substr($hex,0,1));
-      $g = hexdec(substr($hex,1,1).substr($hex,1,1));
-      $b = hexdec(substr($hex,2,1).substr($hex,2,1));
-   } else {
-      $r = hexdec(substr($hex,0,2));
-      $g = hexdec(substr($hex,2,2));
-      $b = hexdec(substr($hex,4,2));
-   }
-   $rgb = array($r, $g, $b);
-   //return implode(",", $rgb); // returns the rgb values separated by commas
-   return $rgb; // returns an array with the rgb values
-}
+        if(strlen($hex) == 3) {
+            $r = hexdec(substr($hex,0,1).substr($hex,0,1));
+            $g = hexdec(substr($hex,1,1).substr($hex,1,1));
+            $b = hexdec(substr($hex,2,1).substr($hex,2,1));
+        } else {
+            $r = hexdec(substr($hex,0,2));
+            $g = hexdec(substr($hex,2,2));
+            $b = hexdec(substr($hex,4,2));
+        }
+        $rgb = array($r, $g, $b);
+        //return implode(",", $rgb); // returns the rgb values separated by commas
+        return $rgb; // returns an array with the rgb values
+    }
 
 }

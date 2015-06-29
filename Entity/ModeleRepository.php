@@ -3,6 +3,7 @@
 namespace Lle\PdfReportBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
+use Lle\PdfReportBundle\Lib\PdfReport;
 
 /**
  * ModeleRepository
@@ -12,4 +13,15 @@ use Doctrine\ORM\EntityRepository;
  */
 class ModeleRepository extends EntityRepository
 {
+    public function generatePdf($code, $obj, $iterable, $webpath) {
+
+        $modele = $this->findOneByCode($code);
+        $pdf = new PdfReport(file_get_contents($webpath.'/'.$modele->getFilepath()));
+        //$pdf->loadFile($modele->getFilepath());
+        $pdf->generate($obj, $iterable);
+        $tmp_file = tempnam( $webpath."/pdfs/" , "pdf_".$code."_" );
+        $pdf->output($tmp_file, 'F');
+        return $tmp_file;
+    }
+ 
 }
