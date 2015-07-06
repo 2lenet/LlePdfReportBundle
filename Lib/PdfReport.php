@@ -691,5 +691,41 @@ class PdfReport extends \TCPDF {
         //return implode(",", $rgb); // returns the rgb values separated by commas
         return $rgb; // returns an array with the rgb values
     }
+    
+    public function generateComponentElement($item) {
+
+        $this->setReportXY($item);
+        $align = $this->getAlign($item);
+
+        $this->item = $item;
+        
+        $namespaces = $item->getNameSpaces(true);
+        $hc = $item->children($namespaces['hc']);
+        $html = $hc->html;
+        
+        $html->htmlContentExpression = preg_replace_callback(
+                '/({[a-zA-Z_.]*})/', function ($matches) {
+            return $this->getFieldData((string) $matches[0], $this->dataObj, $this->item['pattern']);
+        }, $html->htmlContentExpression
+        );
+        
+        $pattern = array();
+        $pattern[] = '/\# (.*)/';
+        $pattern[] = '/\## (.*)/';
+        $pattern[] = '/\### (.*)/';
+        $pattern[] = '/\*\*(.*)\*\*/';
+        $pattern[] = '/_(.*)_/';
+        
+        $replacement = array();
+        $replacement[] = '<h1>${1}</h1>';
+        $replacement[] = '<h2>${1}</h2>';
+        $replacement[] = '<h3>${1}</h3>';
+        $replacement[] = '<b>${1}</b>';
+        $replacement[] = '<i>${1}</i>';
+        
+        $text = preg_replace($pattern, $replacement, $html->htmlContentExpression);
+        
+        $this->writeHTMLCell($item->reportElement['width'] + 5, $item->reportElement['height'] + 2, '', '', (string) $text, 0, $align);
+    }    
 
 }

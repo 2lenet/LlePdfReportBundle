@@ -4,6 +4,7 @@ namespace Lle\PdfReportBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
 use Lle\PdfReportBundle\Lib\PdfReport;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * ModeleRepository
@@ -17,8 +18,7 @@ class ModeleRepository extends EntityRepository
 
         $modele = $this->findOneByCode($code);
         $pdf = new PdfReport(file_get_contents($webpath.'/'.$modele->getFilepath()));
-        //$pdf->loadFile($modele->getFilepath());
-        $pdf->generate($obj, $iterable);
+        $pdf->generate($obj, new ArrayCollection());
         $tmp_file = tempnam( $webpath."/pdfs/" , "pdf_".$code."_" );
         $pdf->output($tmp_file, 'F');
         return $tmp_file;
