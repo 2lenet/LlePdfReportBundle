@@ -18,7 +18,7 @@ class ModeleRepository extends EntityRepository
 
         $modele = $this->findOneByCode($code);
         $pdf = new PdfReport(file_get_contents($webpath.'/'.$modele->getFilepath()));
-        $pdf->generate($obj, new ArrayCollection());
+        $pdf->generate($obj, $iterable);
         $tmp_file = tempnam( $webpath."/pdfs/" , "pdf_".$code."_" );
         $pdf->output($tmp_file, 'F');
         return $tmp_file;
