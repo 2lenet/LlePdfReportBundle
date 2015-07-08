@@ -295,7 +295,12 @@ class PdfReport extends \TCPDF {
                 #    return "";
                 #}
             }
-
+          
+            if($field == 'now') {
+              $date = new \DateTime();
+              return $date->format('d/m/Y');
+            }
+          
             if (substr($field, 0, 4) == 'date') {
                 
                 $data = "";
