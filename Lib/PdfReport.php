@@ -297,13 +297,17 @@ class PdfReport extends \TCPDF {
             }
 
             if (substr($field, 0, 4) == 'date') {
+                
                 $data = "";
+                $method = 'get' . $this->to_camel_case($fieldArr[0]);
+                $date_obj = call_user_func(array($obj, $method));
+                
                 try {
-                    if ($obj->get($field)) {
+                    if ($date_obj) {
                         try {
-                            $data = $obj->getDateTimeObject($field)->format('d/m/Y');
+                            $data = $date_obj->format('d/m/Y');
                         } catch (Exception $e) {
-                            $data = $obj->get($field);
+                            $data = $date_obj;
                         }
                     } else {
                         $data = "";
