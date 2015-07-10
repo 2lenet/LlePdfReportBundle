@@ -402,6 +402,8 @@ class PdfReport extends \TCPDF {
                 return 'C';
             if ($item->textElement['textAlignment'] == 'Right')
                 return 'R';
+            if ($item->textElement['textAlignment'] == 'Justify')
+                return 'J';
         }
         return 'L';
     }
