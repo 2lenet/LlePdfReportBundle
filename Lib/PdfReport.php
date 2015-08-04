@@ -2,6 +2,8 @@
 
 namespace Lle\PdfReportBundle\Lib;
 
+use Lle\PdfReportBundle\Lib\Michelf\Markdown;
+
 class PdfReport extends \TCPDF {
 
     public function __construct($xml_report_string) {
@@ -68,6 +70,7 @@ class PdfReport extends \TCPDF {
         $this->initPage($data, $datacoll);
         $this->generateGroup('title', $this->rdata->title);
         $this->generateGroup('pageHeader', $this->rdata->pageHeader);
+        $this->generateGroup('columnHeader', $this->rdata->columnHeader);
         $current_group = 0;
         $i = 1;
         $count = $this->dataColl->count();
@@ -149,20 +152,25 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateGroupItem($key, $group = null, $maxY = 0) {
-        //print "key=$key";
+        //print "generateGroupItem key=$key<br />";
         if (!$group)
             $group = $this->rdata->$key;
         if ($group->band) {
             // version qui marche tout le temps mais laisse beaucoup de blanc.
-            $ruptY = $this->getPageHeight() - $this->bottomMargin - $this->rdata->pageFooter->band['height'] - $this->rdata->summary->band['height'] - $group->band['height'];
+            if ($key != 'columnHeader') {
+                $this->ruptY = $this->getPageHeight() - $this->bottomMargin - $this->rdata->pageFooter->band['height'] - $this->rdata->summary->band['height'] - $group->band['height'];
+            } else {
+                $this->ruptY = $this->getPageHeight() - $this->bottomMargin - $this->rdata->pageFooter->band['height'] - $this->rdata->summary->band['height'];
+            }
             // version optimiste.
             //$ruptY = $this->getPageHeight() - $this->bottomMargin - $this->rdata->pageFooter->band['height']- $group->band['height'];
             // gere les sauts de page si la bande est en stretch
             if ($key == 'detail' && $group->band['splitType'] == 'Stretch') {
                 // on triple la hauteur
-                $ruptY = $ruptY - 3 * $group->band['height'];
+                $this->ruptY = $this->ruptY - 3 * $group->band['height'];
             }
-            if ($this->getY() > $ruptY && $key == "detail") { //columnFooter" && $key !="pageFooter" && $key !="summary") {
+            //print "key=".$key."-Y:" . $this->getY()."<br />";
+            if ($this->getY() > $this->ruptY && $key == "detail") { //columnFooter" && $key !="pageFooter" && $key !="summary") {
                 //$this->maxY = $this->getY();
                 $this->newPage();
             }
@@ -191,6 +199,7 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateItem($key, $item) {
+        //print "generateItem key=" . $key . "<br />";
         $method = "generate" . ucfirst($key);
         $this->$method($item);
     }
@@ -295,18 +304,18 @@ class PdfReport extends \TCPDF {
                 #    return "";
                 #}
             }
-          
-            if($field == 'now') {
-              $date = new \DateTime();
-              return $date->format('d/m/Y');
+
+            if ($field == 'now') {
+                $date = new \DateTime();
+                return $date->format('d/m/Y');
             }
-          
+
             if (substr($field, 0, 4) == 'date') {
-                
+
                 $data = "";
                 $method = 'get' . $this->to_camel_case($fieldArr[0]);
                 $date_obj = call_user_func(array($obj, $method));
-                
+
                 try {
                     if ($date_obj) {
                         try {
@@ -545,7 +554,7 @@ class PdfReport extends \TCPDF {
      * Redéfini ici car modification des header pour IE
      */
     public function Output($name = '', $dest = '') {
-
+        //die();
         //Output PDF to some destination
         //Finish document if necessary
         if ($this->state < 3) {
@@ -715,32 +724,85 @@ class PdfReport extends \TCPDF {
         $html = $hc->html;
 
         $html->htmlContentExpression = $this->getFieldData($html->htmlContentExpression, $this->dataObj, $this->item['pattern']);
-        
+
         // Remplacement de variable dans le texte
         $text = preg_replace_callback(
                 '/({[a-zA-Z_.]*})/', function ($matches) {
             return $this->getFieldData((string) $matches[0], $this->dataObj, '');
         }, $html->htmlContentExpression
-        );        
+        );
 
         // Transformation markdown => HTML
-        $pattern = array();
-        $pattern[] = '/\# (.*)/';
-        $pattern[] = '/\## (.*)/';
-        $pattern[] = '/\### (.*)/';
-        $pattern[] = '/\*\*(.*)\*\*/';
-        $pattern[] = '/_(.*)_/';
+        $html = Markdown::defaultTransform($text);
 
-        $replacement = array();
-        $replacement[] = '<h1>${1}</h1>';
-        $replacement[] = '<h2>${1}</h2>';
-        $replacement[] = '<h3>${1}</h3>';
-        $replacement[] = '<b>${1}</b>';
-        $replacement[] = '<i>${1}</i>';
+        $chapitres = preg_split("/<(h[1-3]|p)>/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
-        $text = preg_replace($pattern, $replacement, $text);
+        foreach ($chapitres as $key => $chapitre) {
 
-        $this->writeHTMLCell($item->reportElement['width'] + 5, $item->reportElement['height'] + 2, '', '', (string) $text, 0, $align);
+            if ($key%2) {
+                $balise = "<"  . $chapitres[$key-1] . ">";
+                $height = $this->evaluateHeight('html', $balise . $chapitre);
+                if ($this->getY() + $height > $this->ruptY) {
+                    $this->newPage();
+                }
+
+                $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $balise . $chapitre, 0, 1, false, true, $align, true);
+            }
+        }
+    }
+
+    public function evaluateHeight($mode, $text = '') {
+
+        if ((intval($this->rdata['pageWidth'])) > (intval($this->rdata['pageHeight'])))
+            $orientation = 'L';
+        else
+            $orientation = 'P';
+        $unit = 'pt'; //$rdata['report']['unit'];
+        $format = array(intval($this->rdata['pageWidth']), intval($this->rdata['pageHeight']));
+        //$format = 'A4';
+        $unicode = true;
+        $encoding = 'utf-8';
+
+        $pdf = new \TCPDF($orientation, $unit, $format, $unicode, $encoding);
+        $pdf->AddPage();
+
+        $pdf->startTransaction();
+
+
+        $start_y = $pdf->GetY();
+        //print "start:" . $start_y . "<br />";
+        $start_page = $pdf->getPage();
+
+        if ($mode == 'html') {
+            $pdf->writeHTMLCell(0, 0, $pdf->GetX(), $start_y, (string) $text, 0, 1);
+        } else {
+            die('reste à implementer le else');
+        }
+
+        $end_y = $pdf->GetY();
+        //print "end:" . $end_y . "<br />";
+        $end_page = $pdf->getPage();
+
+        $height = 0;
+        if ($end_page == $start_page) {
+            $height = $end_y - $start_y;
+        } else {
+            for ($page = $start_page; $page <= $end_page; ++$page) {
+                $pdf->setPage($page);
+                if ($page == $start_page) {
+
+                    $height = $pdf->h - $start_y - $pdf->bMargin;
+                } elseif ($page == $end_page) {
+                    $height = $end_y - $pdf->tMargin;
+                } else {
+                    $height = $pdf->h - $pdf->tMargin - $pdf->bMargin;
+                }
+            }
+        }
+        $pdf->rollbackTransaction();
+        unset($pdf);
+
+        return $height;
     }
 
 }
