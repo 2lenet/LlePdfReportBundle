@@ -338,7 +338,7 @@ class PdfReport extends \TCPDF {
             if (method_exists($obj, $method)) {
                 $data = call_user_func(array($obj, $method));
             } else {
-                $data = (string) $obj . '->' . $method; //. '-' . $e;
+                $data = get_class($obj) . '->' . $method; //. '-' . $e;
             }
             if ($pattern == '€' || $pattern == '€2') {
                 return @number_format($data, 2, ',', ' ');
