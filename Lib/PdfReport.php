@@ -401,6 +401,9 @@ class PdfReport extends \TCPDF {
             if ($item->textElement->font['isUnderline'] == 'true') {
                 $style .='U';
             }
+            if ($item->textElement->font['isItalic'] == 'true') {
+                $style .='I';
+            }            
         }
         $this->setFont('helvetica', $style, $size);
     }
@@ -713,9 +716,12 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateComponentElement($item) {
-
-        $this->setReportXY($item);
+        
+        $this->SetFont('helvetica');
+        $this->SetFont('helvetica', '', 10);                                
         $align = $this->getAlign($item);
+        
+        $this->setReportXY($item);
 
         $this->item = $item;
 
@@ -738,12 +744,17 @@ class PdfReport extends \TCPDF {
         $chapitres = preg_split("/<(h[1-3]|p)>/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($chapitres as $key => $chapitre) {
-
+                        
             if ($key%2) {
                 $balise = "<"  . $chapitres[$key-1] . ">";
-                $height = $this->evaluateHeight('html', $balise . $chapitre);
+                $height_supp = ( $chapitres[$key-1] == 'p' ? 0 : 80 );
+                $height = $this->evaluateHeight('html', $balise . $chapitre) + $height_supp;
                 if ($this->getY() + $height > $this->ruptY) {
+                    
+                    $this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
                     $this->newPage();
+                    $this->SetFont('helvetica');
+                    $this->SetFont('helvetica', '', 10);                                                    
                 }
 
                 $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $balise . $chapitre, 0, 1, false, true, $align, true);
