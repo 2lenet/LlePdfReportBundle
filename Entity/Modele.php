@@ -8,7 +8,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * Modele
  *
- * @ORM\Table()
+ * @ORM\Table(name="modele")
  * @ORM\Entity(repositoryClass="Lle\PdfReportBundle\Entity\ModeleRepository")
  * @Gedmo\Uploadable(path="uploads/modele", filenameGenerator="ALPHANUMERIC", allowOverwrite=true)
  *
