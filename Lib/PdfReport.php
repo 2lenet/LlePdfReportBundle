@@ -73,7 +73,7 @@ class PdfReport extends \TCPDF {
         $this->generateGroup('columnHeader', $this->rdata->columnHeader);
         $current_group = 0;
         $i = 1;
-        $count = $this->dataColl->count();
+        $count = count($this->dataColl);
         $current_group = array();
         $previousDataObj = Null;
 
@@ -338,7 +338,11 @@ class PdfReport extends \TCPDF {
             if (method_exists($obj, $method)) {
                 $data = call_user_func(array($obj, $method));
             } else {
-                $data = get_class($obj) . '->' . $method; //. '-' . $e;
+                if(is_object($obj)){
+                    $data = get_class($obj) . '->' . $method; //. '-' . $e;
+                }else{
+                    $data = $obj;
+                }
             }
             if ($pattern == '€' || $pattern == '€2') {
                 return @number_format($data, 2, ',', ' ');
@@ -368,9 +372,16 @@ class PdfReport extends \TCPDF {
         } else {
             $this->item = $item;
             $data = preg_replace_callback(
-                    '/({[a-zA-Z_.]*})/', function ($matches) {
-                return $this->getFieldData((string) $matches[0], $this->dataObj, $this->item['pattern']);
-            }, $item->textFieldExpression
+                '/({[a-zA-Z_.]*})/', 
+                function ($matches) {
+                    $elm = $this->getFieldData((string) $matches[0], $this->dataObj, $this->item['pattern']);
+                    if($elm instanceof \DateTime){
+                        return $elm->format('d/m/Y');
+                    }else{
+                        return $elm;
+                    }   
+                },
+                $item->textFieldExpression
             );
         }
 
