@@ -6,8 +6,11 @@ use Lle\PdfReportBundle\Lib\Michelf\Markdown;
 
 class PdfReport extends \TCPDF {
 
-    public function __construct($xml_report_string) {
+    var $fake = false;
+    
+    public function __construct($xml_report_string, $fake = false) {
 
+        $this->fake = $fake;
         $this->load($xml_report_string);
 
         if ((intval($this->rdata['pageWidth'])) > (intval($this->rdata['pageHeight'])))
@@ -745,6 +748,9 @@ class PdfReport extends \TCPDF {
         // Remplacement de variable dans le texte
         $text = preg_replace_callback(
                 '/({[a-zA-Z_.]*})/', function ($matches) {
+                if($this->fake){
+                    return (string) $matches[0];
+                }
             return $this->getFieldData((string) $matches[0], $this->dataObj, '');
         }, $html->htmlContentExpression
         );
