@@ -2,7 +2,7 @@
 
 namespace Lle\PdfReportBundle\Lib;
 
-use Lle\PdfReportBundle\Lib\Michelf\Markdown;
+use Lle\PdfReportBundle\Lib\Parsedown\Parsedown;
 
 class PdfReport extends \TCPDF {
 
@@ -756,7 +756,8 @@ class PdfReport extends \TCPDF {
         );
 
         // Transformation markdown => HTML
-        $html = Markdown::defaultTransform($text);
+        $parsedown = new Parsedown();
+        $html = $parsedown->text($text);
 
         $chapitres = preg_split("/<(h[1-3]|p)>/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
