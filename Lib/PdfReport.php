@@ -443,7 +443,17 @@ class PdfReport extends \TCPDF {
             $y = $this->group_y + $item->reportElement['y'] + $this->tMargin;
         }
 
-        $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $item->imageExpression)));
+        $this->item = $item;
+        $data = preg_replace_callback(
+            '/({[a-zA-Z_.]*})/',
+            function ($matches) {
+                $elm = $this->getFieldData((string) $matches[0], $this->dataObj, '');
+                return $elm;
+            },
+            $item->imageExpression
+        );
+
+        $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $data)));
 
         $image = 'images/' . $image_name;
 
@@ -742,6 +752,7 @@ class PdfReport extends \TCPDF {
         $namespaces = $item->getNameSpaces(true);
         $hc = $item->children($namespaces['hc']);
         $html = $hc->html;
+        $css = '<style>' . $item->reportElement['style'] . '</style>';
 
         $html->htmlContentExpression = $this->getFieldData($html->htmlContentExpression, $this->dataObj, $this->item['pattern']);
 
@@ -759,14 +770,13 @@ class PdfReport extends \TCPDF {
         $parsedown = new Parsedown();
         $html = $parsedown->text($text);
 
-        $chapitres = preg_split("/<(h[1-3]|p)>/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $chapitres = preg_split("/(?=<(h[1-3]|p)>)/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($chapitres as $key => $chapitre) {
                         
             if ($key%2) {
-                $balise = "<"  . $chapitres[$key-1] . ">";
                 $height_supp = ( $chapitres[$key-1] == 'p' ? 0 : 80 );
-                $height = $this->evaluateHeight('html', $balise . $chapitre) + $height_supp;
+                $height = $this->evaluateHeight('html', $chapitre) + $height_supp;
                 if ($this->getY() + $height > $this->ruptY) {
                     
                     $this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
@@ -775,7 +785,7 @@ class PdfReport extends \TCPDF {
                     $this->SetFont('helvetica', '', 10);                                                    
                 }
 
-                $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $balise . $chapitre, 0, 1, false, true, $align, true);
+                $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $css.$chapitre, 0, 1, false, true, $align, true);
             }
         }
     }
