@@ -24,7 +24,7 @@ class ModeleAdminType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add('code');
-        $builder->add('filepath', 'file', array('data_class' => null));
+        $builder->add('filepath', 'file', array('data_class' => null,'label'=>'Parcourir'));
     }
 
     /**

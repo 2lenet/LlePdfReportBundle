@@ -29,8 +29,8 @@ class ModeleAdminListConfigurator extends AbstractDoctrineORMAdminListConfigurat
      */
     public function buildFields()
     {
-        $this->addField('code', 'Code', true);
-        $this->addField('filename', 'Filename', true);
+        $this->addField('code', 'Code du fichier', true);
+        $this->addField('filename', 'Nom du fichier', true);
     }
 
 
@@ -39,8 +39,8 @@ class ModeleAdminListConfigurator extends AbstractDoctrineORMAdminListConfigurat
      */
     public function showFields()
     {
-        $this->addShowField('code', 'Code');
-        $this->addShowField('filename', 'Filename');
+        $this->addShowField('code', 'Code du fichier');
+        $this->addShowField('filename', 'Nom du fichier');
     }
 
     /**
@@ -48,8 +48,8 @@ class ModeleAdminListConfigurator extends AbstractDoctrineORMAdminListConfigurat
      */
     public function buildFilters()
     {
-        $this->addFilter('code', new ORM\StringFilterType('code'), 'Code',array(), true);
-        $this->addFilter('filename', new ORM\StringFilterType('filename'), 'Filename');
+        $this->addFilter('code', new ORM\StringFilterType('code'), 'Code du fichier',array(), true);
+        $this->addFilter('filename', new ORM\StringFilterType('filename'), 'Nom du fichier',array(), true);
     }
 
     /**
