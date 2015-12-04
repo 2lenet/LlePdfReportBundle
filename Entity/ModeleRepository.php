@@ -23,5 +23,12 @@ class ModeleRepository extends EntityRepository
         $pdf->output($tmp_file, 'F');
         return $tmp_file;
     }
+
+    public function getPdf($code,$obj,$iterable,$webpath){
+        $modele = $this->findOneByCode($code);
+        $pdf = new PdfReport(file_get_contents($webpath.'/'.$modele->getFilepath()));
+        $pdf->generate($obj, $iterable);
+        return $pdf;
+    }
  
 }
