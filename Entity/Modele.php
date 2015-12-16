@@ -8,9 +8,8 @@ use Gedmo\Mapping\Annotation as Gedmo;
 /**
  * Modele
  *
- * @ORM\Table(name="modele")
+ * @ORM\Table(name="modele",indexes={@ORM\Index(name="code", columns={"code"})}))
  * @ORM\Entity(repositoryClass="Lle\PdfReportBundle\Entity\ModeleRepository")
- * @Gedmo\Uploadable(path="uploads/modele", filenameGenerator="ALPHANUMERIC", allowOverwrite=true)
  *
  */
 class Modele
@@ -27,7 +26,7 @@ class Modele
     /**
      * @var string
      *
-     * @ORM\Column(name="code", type="string", length=10)
+     * @ORM\Column(name="code", type="string", length=30)
      */
     private $code;
 
@@ -35,17 +34,9 @@ class Modele
      * @var string
      *
      * @ORM\Column(name="filename", type="string")
-     * @Gedmo\UploadableFileName
      */
     private $filename;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="filepath", type="string")
-     * @Gedmo\UploadableFilePath
-     */
-    private $filepath;
 
     /**
      * Get id
@@ -103,26 +94,4 @@ class Modele
         return $this->filename;
     }
 
-    /**
-     * Set filepath
-     *
-     * @param string $filepath
-     * @return Modele
-     */
-    public function setFilepath($filepath)
-    {
-        $this->filepath = $filepath;
-
-        return $this;
-    }
-
-    /**
-     * Get filepath
-     *
-     * @return string 
-     */
-    public function getFilepath()
-    {
-        return $this->filepath;
-    }
 }

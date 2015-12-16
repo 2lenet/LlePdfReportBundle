@@ -1,0 +1,4 @@
+services:
+    lle_pdf_report:
+        class: Lle\PdfReportBundle\Service\PdfReport
+        arguments: ['@service_container']

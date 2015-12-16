@@ -6,32 +6,22 @@ use Lle\PdfReportBundle\Lib\Parsedown\Parsedown;
 
 class PdfReport extends \TCPDF {
 
-    var $fake = false;
+    private $fake = false;
     
-    public function __construct($xml_report_string, $fake = false) {
-
+    public function __construct($xml_report_string = null, $fake = false) {
         $this->fake = $fake;
-        $this->load($xml_report_string);
-
-        if ((intval($this->rdata['pageWidth'])) > (intval($this->rdata['pageHeight'])))
-            $orientation = 'L';
-        else
-            $orientation = 'P';
-        $unit = 'pt'; //$rdata['report']['unit'];
-        $format = array(intval($this->rdata['pageWidth']), intval($this->rdata['pageHeight']));
-        //$format = 'A4';
-        $unicode = true;
-        $encoding = 'utf-8';
-        $this->decX = 0;
-        parent::__construct($orientation, $unit, $format, $unicode, $encoding);
-        $this->SetFont('helvetica');
+        if($xml_report_string){
+            $this->load($xml_report_string);
+        }
+        parent::__construct();
         $this->SetFont('helvetica', 'B', 10);
-        //$this->setMargins(intval($this->rdata['leftMargin']),intval($this->rdata['topMargin']),intval($this->rdata['rightMargin']),1);
-        $this->setMargins(intval($this->rdata['leftMargin']), 0, intval($this->rdata['rightMargin']), 1);
-        $this->bottomMargin = intval($this->rdata['bottomMargin']);
-        $this->setAutoPageBreak(0);
         $this->setViewerPreference('PrintScaling', 'None');
         $this->vars = array();
+        $this->setAutoPageBreak(0);
+    }
+
+    public function setFake($fake){
+        $this->fake = $fake;
     }
 
     public function setVars($vars) {
@@ -57,8 +47,18 @@ class PdfReport extends \TCPDF {
     }
 
     public function load($xml_report_string) {
-        $rdata = new \SimpleXMLElement($xml_report_string);
-        $this->rdata = $rdata;
+        $this->rdata  = new \SimpleXMLElement($xml_report_string);
+        $this->setPageUnit('pt');
+        if ((intval($this->rdata['pageWidth'])) > (intval($this->rdata['pageHeight'])))
+            $orientation = 'L';
+        else
+            $orientation = 'P';
+        $format = array(intval($this->rdata['pageWidth']), intval($this->rdata['pageHeight']));
+        $this->decX = 0;
+        $this->setPageFormat($format,$orientation);
+        $this->setPageUnit('pt');
+        $this->setMargins(intval($this->rdata['leftMargin']), 0, intval($this->rdata['rightMargin']), 1);
+        $this->bottomMargin = intval($this->rdata['bottomMargin']);
     }
 
     public function initPage($data, $datacoll) {
@@ -456,7 +456,6 @@ class PdfReport extends \TCPDF {
         $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $data)));
 
         $image = 'images/' . $image_name;
-
         if (is_file($image)) {
             $this->Image($image, $x, $y, $item->reportElement['width']);
         }
@@ -759,11 +758,12 @@ class PdfReport extends \TCPDF {
         // Remplacement de variable dans le texte
         $text = preg_replace_callback(
                 '/({[a-zA-Z_.]*})/', function ($matches) {
-                if($this->fake){
-                    return (string) $matches[0];
-                }
-            return $this->getFieldData((string) $matches[0], $this->dataObj, '');
-        }, $html->htmlContentExpression
+                    if($this->fake) {
+                        return (string) $matches[0];
+                    }
+                    return $this->getFieldData((string) $matches[0], $this->dataObj, '');
+                },
+                $html->htmlContentExpression
         );
 
         // Transformation markdown => HTML
