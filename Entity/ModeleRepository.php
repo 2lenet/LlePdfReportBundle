@@ -17,7 +17,7 @@ class ModeleRepository extends EntityRepository
     public function generatePdf($code, $obj, $iterable, $webpath, $fake = false) {
 
         $modele = $this->findOneByCode($code);
-        $pdf = new PdfReport(file_get_contents($webpath.'/'.$modele->getFilepath()), $fake);
+        $pdf = new PdfReport(file_get_contents($webpath.'/uploads/modele/'.$modele->getFilename()), $fake);
         $pdf->generate($obj, $iterable);
         $tmp_file = tempnam( $webpath."/pdfs/" , "pdf_".$code."_" );
         $pdf->output($tmp_file, 'F');
