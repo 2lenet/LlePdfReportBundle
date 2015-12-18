@@ -20,11 +20,15 @@ class PdfReport{
     }
 
     public function getReportDir(){
-        return $this->get('kernel')->getRootDir().'/../data/report/';
+        return $this->getRootDir().'data/report/';
     }
 
     public function getUploadDir(){
-        return $this->get('kernel')->getRootDir().'/../web/uploads/modele/';
+        return $this->getRootDir().'web/uploads/modele/';
+    }
+
+    public function getRootDir(){
+        return $this->get('kernel')->getRootDir().'/../';
     }
 
     public function getModele($code){
@@ -52,7 +56,9 @@ class PdfReport{
     }
 
     public function getEmptyPdf(){
-        return new Pdf();
+        $pdf = new Pdf();
+        $pdf->setRootPath($this->getRootDir());
+        return $pdf;
     }
 
     public function getPdf($code,$obj,$iterable = null,$pdf = null){

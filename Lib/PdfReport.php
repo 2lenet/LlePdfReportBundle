@@ -7,6 +7,7 @@ use Lle\PdfReportBundle\Lib\Parsedown\Parsedown;
 class PdfReport extends \TCPDF {
 
     private $fake = false;
+    private $rootPath = null;
     
     public function __construct($xml_report_string = null, $fake = false) {
         $this->fake = $fake;
@@ -18,6 +19,10 @@ class PdfReport extends \TCPDF {
         $this->setViewerPreference('PrintScaling', 'None');
         $this->vars = array();
         $this->setAutoPageBreak(0);
+    }
+
+    public function setRootPath($rootPath){
+        $this->rootPath = $rootPath;
     }
 
     public function setFake($fake){
@@ -65,7 +70,7 @@ class PdfReport extends \TCPDF {
         $this->dataObj = $data;
         $this->data = $data;
         $this->dataColl = $datacoll;
-        $this->AddPage();
+        //$this->AddPage();
         $this->SetXY(0, 0);
     }
 
@@ -454,10 +459,26 @@ class PdfReport extends \TCPDF {
         );
 
         $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $data)));
-
-        $image = 'images/' . $image_name;
-        if (is_file($image)) {
-            $this->Image($image, $x, $y, $item->reportElement['width']);
+        if($this->rootPath){
+            //ici on pense à gagner du temps dans le future 
+            $where = array('data/report/images','web/images','data/images','data/report/images','data/report','web');
+            foreach($where as $w){
+                if (is_file($this->rootPath.$w.'/'.$image_name)) {
+                    $image = $this->rootPath.$w.'/'.$image_name;
+                    break;
+                }
+            }
+            if($image){
+                $this->Image($image, $x, $y, $item->reportElement['width']);
+            }else{
+                throw new \Exception($image_name.' not found in '.implode(',',$where));
+            }
+        }else{
+            //ici on n'y a pas pensé ... good luck
+            $image = 'images/' . $image_name;
+            if (is_file($image)) {
+                $this->Image($image, $x, $y, $item->reportElement['width']);
+            }
         }
     }
 
