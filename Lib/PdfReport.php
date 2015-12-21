@@ -10,11 +10,13 @@ class PdfReport extends \TCPDF {
     private $rootPath = null;
     
     public function __construct($xml_report_string = null, $fake = false) {
+        parent::__construct();
         $this->fake = $fake;
+
         if($xml_report_string){
             $this->load($xml_report_string);
         }
-        parent::__construct();
+
         $this->SetFont('helvetica', 'B', 10);
         $this->setViewerPreference('PrintScaling', 'None');
         $this->vars = array();
@@ -70,7 +72,7 @@ class PdfReport extends \TCPDF {
         $this->dataObj = $data;
         $this->data = $data;
         $this->dataColl = $datacoll;
-        //$this->AddPage();
+        $this->AddPage();
         $this->SetXY(0, 0);
     }
 
