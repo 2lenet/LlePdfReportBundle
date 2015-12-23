@@ -793,22 +793,44 @@ class PdfReport extends \TCPDF {
         $parsedown = new Parsedown();
         $html = $parsedown->text($text);
 
+        $tagvs = array(
+            'h1' => array(0 => array('h' => 1, 'n' => 3), 1 => array('h' => 1, 'n' => 3)),
+            'h2' => array(0 => array('h' => 2, 'n' => 3), 1 => array('h' => 2, 'n' => 3))
+        );
+        $this->setHtmlVSpace($tagvs);
+
+        $height = 0;
+        $buffer_chapitre = '';
         $chapitres = preg_split("/(?=<(h[1-3]|p)>)/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($chapitres as $key => $chapitre) {
                         
             if ($key%2) {
-                $height_supp = ( $chapitres[$key-1] == 'p' ? 0 : 80 );
-                $height = $this->evaluateHeight('html', $chapitre) + $height_supp;
-                if ($this->getY() + $height > $this->ruptY) {
-                    
-                    $this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
-                    $this->newPage();
-                    $this->SetFont('helvetica');
-                    $this->SetFont('helvetica', '', 10);                                                    
-                }
 
-                $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $css.$chapitre, 0, 1, false, true, $align, true);
+                /*$height_supp = ( $chapitres[$key-1] == 'p' ? 0 : 80 );
+                $height = $this->evaluateHeight('html', $chapitre) + $height_supp;*/
+                
+                if( $chapitres[$key-1] != 'p' ) {
+                    $height += $this->evaluateHeight('html', $chapitre) + 80;                    
+                    $buffer_chapitre .= $chapitre;
+                }
+                else {
+                    
+                    $height += $this->evaluateHeight('html', $chapitre);                    
+                    $buffer_chapitre .= $chapitre;
+
+                    if ($this->getY() + $height > $this->ruptY) {
+
+                        $this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
+                        $this->newPage();
+                        $this->SetFont('helvetica');
+                        $this->SetFont('helvetica', '', 10);
+                    }
+
+                    $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $css.$buffer_chapitre, 0, 1, false, true, $align, true);
+                    $buffer_chapitre = '';
+                    $height = 0;
+                }
             }
         }
     }
