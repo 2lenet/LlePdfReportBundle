@@ -8,7 +8,7 @@ class PdfReport extends \TCPDF {
 
     private $fake = false;
     private $rootPath = null;
-    
+
     public function __construct($xml_report_string = null, $fake = false) {
         parent::__construct();
         $this->fake = $fake;
@@ -155,7 +155,7 @@ class PdfReport extends \TCPDF {
         //$this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
         $this->generateGroup('columnFooter', $this->rdata->columnFooter);
         $this->generateGroup('pageFooter', $this->rdata->pageFooter);
-        $this->AddPage();
+        if($this->dataObj) $this->AddPage();
         $this->SetXY(0, 0);
         $this->generateGroup('pageHeader', $this->rdata->pageHeader);
         $this->dataObj = $obj;
@@ -286,7 +286,7 @@ class PdfReport extends \TCPDF {
     }
 
     public function generatePrintWhenExpression($item) {
-        
+
     }
 
     public function getFieldData($exp, $obj, $pattern = '') {
@@ -367,7 +367,7 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateBreak($item) {
-        
+
     }
 
     public function generateTextField($item) {
@@ -382,14 +382,14 @@ class PdfReport extends \TCPDF {
         } else {
             $this->item = $item;
             $data = preg_replace_callback(
-                '/({[a-zA-Z_.]*})/', 
+                '/({[a-zA-Z_.]*})/',
                 function ($matches) {
                     $elm = $this->getFieldData((string) $matches[0], $this->dataObj, $this->item['pattern']);
                     if($elm instanceof \DateTime){
                         return $elm->format('d/m/Y');
                     }else{
                         return $elm;
-                    }   
+                    }
                 },
                 $item->textFieldExpression
             );
@@ -424,7 +424,7 @@ class PdfReport extends \TCPDF {
             }
             if ($item->textElement->font['isItalic'] == 'true') {
                 $style .='I';
-            }            
+            }
         }
         $this->setFont('helvetica', $style, $size);
     }
@@ -462,7 +462,7 @@ class PdfReport extends \TCPDF {
 
         $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $data)));
         if($this->rootPath){
-            //ici on pense à gagner du temps dans le future 
+            //ici on pense à gagner du temps dans le future
             $where = array('data/report/images','web/images','data/images','data/report/images','data/report','web');
             foreach($where as $w){
                 if (is_file($this->rootPath.$w.'/'.$image_name)) {
@@ -585,11 +585,11 @@ class PdfReport extends \TCPDF {
     }
 
     public function Header() {
-        
+
     }
 
     public function Footer() {
-        
+
     }
 
     /**
@@ -762,11 +762,11 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateComponentElement($item) {
-        
+
         $this->SetFont('helvetica');
-        $this->SetFont('helvetica', '', 10);                                
+        $this->SetFont('helvetica', '', 10);
         $align = $this->getAlign($item);
-        
+
         $this->setReportXY($item);
 
         $this->item = $item;
@@ -804,19 +804,19 @@ class PdfReport extends \TCPDF {
         $chapitres = preg_split("/(?=<(h[1-3]|p)>)/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 
         foreach ($chapitres as $key => $chapitre) {
-                        
+
             if ($key%2) {
 
                 /*$height_supp = ( $chapitres[$key-1] == 'p' ? 0 : 80 );
                 $height = $this->evaluateHeight('html', $chapitre) + $height_supp;*/
-                
+
                 if( $chapitres[$key-1] != 'p' ) {
-                    $height += $this->evaluateHeight('html', $chapitre) + 80;                    
+                    $height += $this->evaluateHeight('html', $chapitre) + 80;
                     $buffer_chapitre .= $chapitre;
                 }
                 else {
-                    
-                    $height += $this->evaluateHeight('html', $chapitre);                    
+
+                    $height += $this->evaluateHeight('html', $chapitre);
                     $buffer_chapitre .= $chapitre;
 
                     if ($this->getY() + $height > $this->ruptY) {
