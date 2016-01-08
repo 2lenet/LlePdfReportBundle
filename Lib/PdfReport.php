@@ -72,7 +72,7 @@ class PdfReport extends \TCPDF {
         $this->dataObj = $data;
         $this->data = $data;
         $this->dataColl = $datacoll;
-        $this->AddPage();
+        if(count($data)) $this->AddPage();
         $this->SetXY(0, 0);
     }
 
@@ -106,8 +106,9 @@ class PdfReport extends \TCPDF {
                             $this->dataObj = $previousDataObj;
                             $this->generateGroupItem('groupFooter', $group->groupFooter);
                             $this->dataObj = $dataObj;
-                            if ($startPage)
+                            if ($startPage){
                                 $this->newPage();
+                            }
                         }
 
                         $this->generateGroupItem('groupHeader', $group->groupHeader);
@@ -155,7 +156,7 @@ class PdfReport extends \TCPDF {
         //$this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
         $this->generateGroup('columnFooter', $this->rdata->columnFooter);
         $this->generateGroup('pageFooter', $this->rdata->pageFooter);
-        if($this->dataObj) $this->AddPage();
+        $this->AddPage();
         $this->SetXY(0, 0);
         $this->generateGroup('pageHeader', $this->rdata->pageHeader);
         $this->dataObj = $obj;
