@@ -465,6 +465,7 @@ class PdfReport extends \TCPDF {
         if($this->rootPath){
             //ici on pense à gagner du temps dans le future
             $where = array('data/report/images','web/images','data/images','data/report/images','data/report','web');
+            $image = null;
             foreach($where as $w){
                 if (is_file($this->rootPath.$w.'/'.$image_name)) {
                     $image = $this->rootPath.$w.'/'.$image_name;
