@@ -174,10 +174,11 @@ abstract class Pdf extends \TCPDF
     {
         $w = (isset($options['w']))? $options['w']:0;
         $h = (isset($options['h']))? $options['h']:0;
-        $this->writeHTMLCell($w, $h, $x, $y, $html, 0, 0, false, true, 'C', true);
+        $align = (isset($options['align']))? $options['align']:'C';
+        $this->writeHTMLCell($w, $h, $x, $y, $html, 0, 0, false, true, $align, true);
     }
 
-    protected function ecrireSurCadre($w, $h, $x, $y, $html, $align, $c, $moveX = false)
+    protected function readInRect($w, $h, $x, $y, $html, $align, $c, $moveX = false)
     {
         $oldW = $w;
         $widthText = $this->getStringWidth($html);
@@ -186,7 +187,7 @@ abstract class Pdf extends \TCPDF
             $x += ($oldW - $w)/2;
         }
         $this->rectangle($w, $h, $x, $y, $c);
-        $this->ecrire($w, $h, $x, $y, $html, $align);
+        $this->read($x, $y, $html,array('w'=>$w,'h'=>$h,'align'=>$align));
     }
 
     protected function changerCouleur($c)
@@ -194,7 +195,7 @@ abstract class Pdf extends \TCPDF
         $this->SetTextColorArray($this->colors($c));
     }
 
-    protected function changerPolice($size, $c, $family = null)
+    protected function changeFont($size, $c, $family = null)
     {
         if (is_string($size)) {
             $size = $this->fontSizes($size);
