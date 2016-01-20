@@ -16,8 +16,8 @@ abstract class Pdf extends \TCPDF
     }
 
     abstract public function generate();
-    abstract public function colors($c);
-    abstract public function fontSizes($s);
+    abstract public function myColors();
+    abstract public function myFonts();
 
     protected function init()
     {
@@ -29,6 +29,15 @@ abstract class Pdf extends \TCPDF
         if ($this->debug == true) {
             echo $str.'<br/>';
         }
+    }
+
+    protected function colors($c){
+        $colors = $this->myColors();
+        if(is_array($colors) and isset($colors[$c])){
+            return $this->hexaToArrayColor($colors[$c]);
+        }
+        if($c == 'default') return $this->hexaToArrayColor('000000');
+        return $this->hexaToArrayColor(str_replace("#", "", $c));
     }
 
     public function setItem($item)
@@ -63,9 +72,9 @@ abstract class Pdf extends \TCPDF
     {
         $h = $this->getPageHeight();
         $w = $this->getPageWidth();
-        $this->rectangle($w, 9, 0, $h-9, 'noir');
-        $this->changerPolice(12, 'blanc');
-        $this->ecrire($w-5, 6, 0, $h-9, $this->getPage(), 'R');
+        $this->rectangle($w, 9, 0, $h-9, 'default');
+        $this->changeFont('default');
+        $this->read($w-5, 6, 0, $h-9, $this->getPage(), 'R');
     }
 
     public function Output($name = 'doc.pdf', $dest = 'I')
@@ -84,7 +93,7 @@ abstract class Pdf extends \TCPDF
         }
     }
 
-    public function Mois($index)
+    public function month($index)
     {
         $mois = array('Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre');
         return $mois[$index - 1];
@@ -151,16 +160,16 @@ abstract class Pdf extends \TCPDF
         }
     }
 
-    public function rond($x, $y, $r, $c)
+    public function drawCircle($x, $y, $r, $c)
     {
         $this->circle($x, $y, $r, 0, 360, 'F', array(), $this->colors($c), 2);
     }
 
 
 
-    public function ChangerFamillePolice($police)
+    public function changeFontFamily($police)
     {
-        $data = sfConfig::get('sf_data_dir').'/fonts/';
+        $data = $this->get('kernel')->getRootDir().'/../data/fonts';
         $file = $data.$police.'.ttf';
         if (file_exists($file)) {
             $fontname = $this->addTTFfont($file, 'TrueTypeUnicode', '', 32, $data);
@@ -190,21 +199,35 @@ abstract class Pdf extends \TCPDF
         $this->read($x, $y, $html,array('w'=>$w,'h'=>$h,'align'=>$align));
     }
 
-    protected function changerCouleur($c)
+    protected function changeColor($c)
     {
         $this->SetTextColorArray($this->colors($c));
     }
 
-    protected function changeFont($size, $c, $family = null)
+    protected function changeFont($f)
     {
-        if (is_string($size)) {
-            $size = $this->fontSizes($size);
+        $fonts = $this->myFonts();
+        if(isset($fonts[$f])){
+            $f = $fonts[$f];
+        }else{
+            $f = array('size'=>9,'color'=>'default','family'=>'helvetica');
         }
-        $this->SetFontSize($size);
-        $this->changerCouleur($c);
-        if ($family) {
-            $this->ChangerFamillePolice($family);
+        if (isset($f['size'])) {
+            $this->SetFontSize($f['size']);
         }
+        if (isset($f['color'])) {
+            $this->changeColor($f['color']);
+        }
+        if (isset($f['family'])) {
+            $this->changeFontFamily($f['family']);
+        }
+        if (isset($f['style'])) {
+            $this->changeFontStyle($f['style']);
+        }
+    }
+
+    protected function changeFontStyle($style){
+        $this->FontStyle = $style;
     }
 
     protected function rectangle($w, $h, $x, $y, $c)
@@ -212,7 +235,7 @@ abstract class Pdf extends \TCPDF
         $this->Rect($x, $y, $w, $h, 'F', array('width'=>0), $this->colors($c));
     }
 
-    protected function rectangleVide($w, $h, $x, $y, $c)
+    protected function rectangleEmpty($w, $h, $x, $y, $c)
     {
         $border_style = array('all' => array('width' => 0.5, 'cap' => 'butt', 'join' => 'miter', 'dash' => 1, 'phase' => 0));
         $this->Rect($x, $y, $w, $h, 'D', $border_style, $this->colors($c));
@@ -224,16 +247,17 @@ abstract class Pdf extends \TCPDF
         $color = (isset($options['color']))? $options['color']:'default';
         $weight = (isset($options['weight']))? $options['weight']:0.5;
         $x = (isset($options['start']))? $options['start']:0;
+        $w = ((isset($options['end']))? $options['end']:$w)-$x;
         $this->rectangle($w, $weight, $x, $y,$color);
     }
 
-    protected function vligne($x, $w = 1, $h = 0, $y = 0, $c = 'noir')
+    protected function traceVligne($x,$options = array())
     {
-        $h = ($h)? $h:$this->getPageHeight();
-        $this->rectangle($w, $h, $x, $y, $c);
+        $h = $this->getPageHeight();
+        $this->rectangle(0.5, $h, $x, 0, 'default');
     }
 
-    protected function carre($size, $x, $y, $c)
+    protected function square($size, $x, $y, $c)
     {
         $this->rectangle($size, $size, $x, $y, $c);
     }
