@@ -74,7 +74,7 @@ abstract class Pdf extends \TCPDF
         $w = $this->getPageWidth();
         $this->rectangle($w, 9, 0, $h-9, 'default');
         $this->changeFont('default');
-        $this->read($w-5, 6, 0, $h-9, $this->getPage(), 'R');
+        $this->w($w-5, 6, 0, $h-9, $this->getPage(), 'R');
     }
 
     public function Output($name = 'doc.pdf', $dest = 'I')
@@ -108,7 +108,7 @@ abstract class Pdf extends \TCPDF
     }
 
 
-    protected function drawImage($file, $x, $y, $width = null, $height = null, $options = array())
+    protected function drawImage($file, $x = 0, $y = 0, $width = null, $height = null, $options = array())
     {
         $file = $this->get('kernel')->getRootDir().'/../'.$file;
         $round = (isset($options['round']))? $options['round']:false;
@@ -182,7 +182,7 @@ abstract class Pdf extends \TCPDF
         }
     }
 
-    protected function read($x, $y, $html,$options = array())
+    protected function w($x, $y, $html,$options = array())
     {
         $w = (isset($options['w']))? $options['w']:0;
         $h = (isset($options['h']))? $options['h']:0;
@@ -190,7 +190,7 @@ abstract class Pdf extends \TCPDF
         $this->writeHTMLCell($w, $h, $x, $y, $html, 0, 0, false, true, $align, true);
     }
 
-    protected function readInRect($w, $h, $x, $y, $html, $align, $c, $moveX = false)
+    protected function writeInRect($w, $h, $x, $y, $html, $align, $c, $moveX = false)
     {
         $oldW = $w;
         $widthText = $this->getStringWidth($html);
@@ -199,7 +199,7 @@ abstract class Pdf extends \TCPDF
             $x += ($oldW - $w)/2;
         }
         $this->rectangle($w, $h, $x, $y, $c);
-        $this->read($x, $y, $html,array('w'=>$w,'h'=>$h,'align'=>$align));
+        $this->w($x, $y, $html,array('w'=>$w,'h'=>$h,'align'=>$align));
     }
 
     protected function changeColor($c)

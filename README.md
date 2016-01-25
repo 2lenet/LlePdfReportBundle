@@ -8,14 +8,14 @@ Editeur à utiliser pour créer les rapports : iReport ( validé version 4.7.0 )
 
 README OBSOLETE ( version sf1.4 )
 
-Puis dans l'action effectuer l'opération suivante : 
+Puis dans l'action effectuer l'opération suivante :
 
  function executeListConfCmd($request) {
         $filename = sfConfig::get('sf_root_dir').'/data/reports/conf_cmd.jrxml';
         $cmd = $this->getRoute()->getObject();
         $rep = new PdfReport(file_get_contents($filename));
         $rep->generate($cmd, $cmd->getCommandeLignes());
-        
+
         $rep->Output('cmd.pdf', 'I');
         return sfView::NONE;
     }
@@ -24,3 +24,35 @@ Puis dans l'action effectuer l'opération suivante :
 Les deux paramétres sont l'objet pour l'entete et la doctrine collection pour les lignes de détail.
 
 Tous les éléments ireport ne sont pas géré pour le moment.
+
+PDF normal:
+Cree le service:
+lle_alef.pdf_agenda:
+    class:        Lle\PdfReportBundle\Service\PdfGenerator
+    arguments:    ['@service_container',Lle\AlefBundle\Utils\Pdf\Agenda]
+
+Cree votre class (ici Lle\AlefBundle\Utils\Pdf\Agenda):
+
+<?php
+class Agenda extends Lle\PdfReportBundle\Lib\Pdf{
+    protected $debug = false; private $user;
+    public function myColors(){return array('blanc' => 'FFFFFF','default'=> '000000');}
+    public function myFonts(){return array('titre' => array('size'=>12,'color'=>'noir','family'=>'courier','style'=>'BU'));}
+    public function init(){
+        setlocale(LC_ALL, 'fr_FR'); $this->setAutoPageBreak(false, 0); $this->setMargins(0,0,0); $this->AddPage('L');
+        $this->user = $this->data['user'];
+    }
+    public function generate(){
+        $this->changeFont('titre');
+        $this->w(10,10,'Hello '.$this->user->getName());
+        $this->traceHline(20);
+        $this->drawImage('web/img/logo.png',0,0);
+    }
+    //public function footer(){}
+    //public function header(){}
+}
+
+Dans votre controleur:
+$pdfAgenda = $this->get('lle_alef.pdf_agenda');
+$pdfAgenda->setData(array('user'=>$user));
+$pdfAgenda->show();
