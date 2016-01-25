@@ -108,8 +108,9 @@ abstract class Pdf extends \TCPDF
     }
 
 
-    protected function drawImage($file, $x, $y, $width, $height, $options = array())
+    protected function drawImage($file, $x, $y, $width = null, $height = null, $options = array())
     {
+        $file = $this->get('kernel')->getRootDir().'/../'.$file;
         $round = (isset($options['round']))? $options['round']:false;
         $crop = (isset($options['crop']))? $options['crop']:false;
         $center = (isset($options['center']))? $options['center']:false;
@@ -123,6 +124,8 @@ abstract class Pdf extends \TCPDF
         if ($file && @fopen($file, 'r')) {
             $size = @getimagesize($file);
             if ($size) {
+                $width = ($width)? $width:$size[0];
+                $height = ($height)? $height:$size[1];
                 $nameFolder = basename(dirname($file));
                 if ($crop == false) {
                     $size = $this->redimenssion($size[0], $size[1], $width, $height);
