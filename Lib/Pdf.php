@@ -10,10 +10,6 @@ abstract class Pdf extends \TCPDF
     protected $data;
     protected $container;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     abstract public function generate();
     abstract public function myColors();
