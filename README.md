@@ -56,8 +56,16 @@ class Agenda extends Lle\PdfReportBundle\Lib\Pdf{
 }
 
 Dans votre controleur:
-$pdfAgenda = $this->get('lle_alef.pdf_agenda');
-$pdfAgenda->setData(array('user'=>$user));
+$pdf = $this->get('lle_alef.pdf_agenda');
+$pdf->setData(array('user'=>$user));
+$pdf->show();
+
+Pour crée plusieur page a partire d'un PDF (par exemple liste de contrat) vous devez juste ajouter les data avec addIterableData, les data ajouter avec setData sont toujours disponible mais sont les meme pour tous les PDF:
+
+Dans votre controleur:
+$pdf = $this->get('lle_alef.pdf_agenda');
+$pdf->setData(array('user'=>$user));
+foreach($contrats as $contrat) $pdfAgenda->addIterateData(array('contrat'=>$contrat));
 $pdfAgenda->show();
 
 ----------------------------------------------------------------------------------------------------------------------------
