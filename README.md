@@ -72,4 +72,14 @@ $pdfAgenda->show();
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 PDF report (joris):
-$this->get('lle_pdf_report')->getResponse('code_modele',$objet,$iterable);
+$this->get('lle_pdf_report')->getResponse('code_modele',$objet,$iterable); //return reponse BinaryFileResponse
+
+il existe les methodes suivante:
+getPdfFile($code, $obj, $iterable = null,$filepath = null) // returne un fichier sous forme de filepath
+getEmptyPdf() // return un PDF vide
+getPdf($code,$obj,$iterable = null,$pdf = null) // return un TCPDF
+
+Itération: (uniquement avec la sorti TCPDF)
+$pdf = $service->getEmptyPdf();
+foreach($coll as $elm) $pdf = $service->getPdf('code',$elm,$elm->getColl(),$pdf);
+$pdf->output();
