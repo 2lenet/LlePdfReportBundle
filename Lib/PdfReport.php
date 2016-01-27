@@ -72,7 +72,7 @@ class PdfReport extends \TCPDF {
         $this->dataObj = $data;
         $this->data = $data;
         $this->dataColl = $datacoll;
-        //$this->AddPage(); //c ici que ça bug
+        $this->AddPage(); //c ici que ça bug
         $this->SetXY(0, 0);
     }
 
