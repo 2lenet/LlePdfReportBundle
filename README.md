@@ -1,29 +1,4 @@
-# LlePdfReportBundle
-Bundle to convert IReport specification files ( jaspersoft ) to pdf file in pure PHP
-Gestionaire de rapport
-
-Editeur à utiliser pour créer les rapports : iReport ( validé version 4.7.0 )
-
-
-
-README OBSOLETE ( version sf1.4 )
-
-Puis dans l'action effectuer l'opération suivante :
-
- function executeListConfCmd($request) {
-        $filename = sfConfig::get('sf_root_dir').'/data/reports/conf_cmd.jrxml';
-        $cmd = $this->getRoute()->getObject();
-        $rep = new PdfReport(file_get_contents($filename));
-        $rep->generate($cmd, $cmd->getCommandeLignes());
-
-        $rep->Output('cmd.pdf', 'I');
-        return sfView::NONE;
-    }
-
-
-Les deux paramétres sont l'objet pour l'entete et la doctrine collection pour les lignes de détail.
-
-Tous les éléments ireport ne sont pas géré pour le moment.
+vos modeles : data/report
 
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
@@ -56,12 +31,34 @@ class Agenda extends Lle\PdfReportBundle\Lib\Pdf{
 }
 
 Dans votre controleur:
-$pdfAgenda = $this->get('lle_alef.pdf_agenda');
-$pdfAgenda->setData(array('user'=>$user));
+$pdf = $this->get('lle_alef.pdf_agenda');
+$pdf->setData(array('user'=>$user));
+$pdf->show();
+
+Pour crée plusieur page a partire d'un PDF (par exemple liste de contrat) vous devez juste ajouter les data avec addIterableData, les data ajouter avec setData sont toujours disponible mais sont les meme pour tous les PDF:
+
+Dans votre controleur:
+$pdf = $this->get('lle_alef.pdf_agenda');
+$pdf->setData(array('user'=>$user));
+foreach($contrats as $contrat) $pdfAgenda->addIterateData(array('contrat'=>$contrat));
 $pdfAgenda->show();
 
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 PDF report (joris):
-$this->get('lle_pdf_report')->getResponse('code_modele',$objet,$iterable);
+Ajouter les modeles a la bdd (Ne fonctionne qu'avec le chemain data/report):
+php app/console lle:pdfreport:sync
+
+appeler le modele
+$this->get('lle_pdf_report')->getResponse('code_modele',$objet,$iterable); //return reponse BinaryFileResponse
+
+il existe les methodes suivante:
+getPdfFile($code, $obj, $iterable = null,$filepath = null) // returne un fichier sous forme de filepath
+getEmptyPdf() // return un PDF vide
+getPdf($code,$obj,$iterable = null,$pdf = null) // return un TCPDF
+
+Itération: (uniquement avec la sorti TCPDF)
+$pdf = $service->getEmptyPdf();
+foreach($coll as $elm) $pdf = $service->getPdf('code',$elm,$elm->getColl(),$pdf);
+$pdf->output();

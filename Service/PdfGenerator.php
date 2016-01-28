@@ -11,6 +11,7 @@ class PdfGenerator
     protected $class;
     protected $item;
     protected $data;
+    protected $iterateDatas;
 
     public function __construct(ContainerInterface $container, $class)
     {
@@ -18,13 +19,12 @@ class PdfGenerator
         $this->class = '\\'.$class;
     }
 
-    public function setItem($item)
-    {
-        $this->item = $item;
-    }
-
     public function setData($data){
         $this->data = $data;
+    }
+
+    public function addIterateData($data){
+        $this->iterateDatas[] = $data;
     }
 
     public function get($name)
@@ -35,13 +35,23 @@ class PdfGenerator
     public function getPdf(){
         $pdf = new $this->class;
         if ($pdf instanceof PDF) {
-            $pdf->setItem($this->item);
+            if(count($this->iterateDatas)) return $this->iteratePdfs($pdf);
             $pdf->setData($this->data);
             $pdf->setContainer($this->container);
             $pdf->init();
             $pdf->generate();
         } else {
             throw new \Exception('PDF GENERATOR ERROR: '.$this->class.' n\'est pas une class PDF');
+        }
+        return $pdf;
+    }
+
+    private function iteratePdfs($pdf){
+        $pdf->setContainer($this->container);
+        foreach($this->iterateDatas as $data){
+            $pdf->setData(array_merge($data,$this->data));
+            $pdf->init();
+            $pdf->generate();
         }
         return $pdf;
     }

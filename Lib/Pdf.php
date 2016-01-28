@@ -36,11 +36,6 @@ abstract class Pdf extends \TCPDF
         return $this->hexaToArrayColor(str_replace("#", "", $c));
     }
 
-    public function setItem($item)
-    {
-        $this->item = $item;
-    }
-
     public function setData($data)
     {
         $this->data = $data;
