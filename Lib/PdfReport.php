@@ -87,47 +87,48 @@ class PdfReport extends \TCPDF {
         $current_group = array();
         $previousDataObj = Null;
 
+        if($datacoll != null) {
+            foreach ($datacoll as $dataObj) {
+                $this->dataObj = $dataObj;
+                $k = 0;
 
-        foreach ($datacoll as $dataObj) {
-            $this->dataObj = $dataObj;
-            $k = 0;
+                foreach ($this->rdata->group as $group) {
+                    $datag = $this->getFieldData($group->groupExpression, $dataObj);
 
-            foreach ($this->rdata->group as $group) {
-                $datag = $this->getFieldData($group->groupExpression, $dataObj);
+                    $current_group[$k] = (isset($current_group[$k])) ? $current_group[$k] : null;
+                    if ($datag) {
 
-                $current_group[$k] = (isset($current_group[$k])) ? $current_group[$k] : null;
-                if ($datag) {
+                        if ($current_group[$k] !== $datag) {  // changement de groupe
+                            $attrs = $group->attributes();
+                            $startPage = (string) $attrs['isStartNewPage'];
 
-                    if ($current_group[$k] !== $datag) {  // changement de groupe
-                        $attrs = $group->attributes();
-                        $startPage = (string) $attrs['isStartNewPage'];
-
-                        if ($current_group[$k]) {
-                            $this->dataObj = $previousDataObj;
-                            $this->generateGroupItem('groupFooter', $group->groupFooter);
-                            $this->dataObj = $dataObj;
-                            if ($startPage){
-                                $this->newPage();
+                            if ($current_group[$k]) {
+                                $this->dataObj = $previousDataObj;
+                                $this->generateGroupItem('groupFooter', $group->groupFooter);
+                                $this->dataObj = $dataObj;
+                                if ($startPage){
+                                    $this->newPage();
+                                }
                             }
+
+                            $this->generateGroupItem('groupHeader', $group->groupHeader);
+                            $current_group[$k] = $datag;
+                            for ($i = $k + 1; $i < count($current_group); $i++)
+                                $current_group[$i] = null;
                         }
-
-                        $this->generateGroupItem('groupHeader', $group->groupHeader);
-                        $current_group[$k] = $datag;
-                        for ($i = $k + 1; $i < count($current_group); $i++)
-                            $current_group[$i] = null;
                     }
+                    $k++;
                 }
-                $k++;
-            }
 
-            if ($i == $count && $this->rdata->detail->band['splitType'] == 'Stretch') {
-                $maxY = $this->getPageHeight() - $this->bottomMargin - $this->rdata->summary->band['height'] - $this->rdata->columnFooter->band['height'] - $this->rdata->pageFooter->band['height'] - $this->rdata->lastPageFooter->band['height'] - 1;
-            } else {
-                $maxY = 0;
+                if ($i == $count && $this->rdata->detail->band['splitType'] == 'Stretch') {
+                    $maxY = $this->getPageHeight() - $this->bottomMargin - $this->rdata->summary->band['height'] - $this->rdata->columnFooter->band['height'] - $this->rdata->pageFooter->band['height'] - $this->rdata->lastPageFooter->band['height'] - 1;
+                } else {
+                    $maxY = 0;
+                }
+                $this->generateGroupItem('detail', null, $maxY);
+                $i++;
+                $previousDataObj = $dataObj;
             }
-            $this->generateGroupItem('detail', null, $maxY);
-            $i++;
-            $previousDataObj = $dataObj;
         }
         if (count($this->rdata->group)) {
             $this->generateGroupItem('groupFooter', $this->rdata->group->groupFooter);
