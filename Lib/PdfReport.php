@@ -92,7 +92,6 @@ class PdfReport extends \TCPDF {
                 $this->dataObj = $dataObj;
                 $k = 0;
 
-<<<<<<< Updated upstream
                 foreach ($this->rdata->group as $group) {
                     $datag = $this->getFieldData($group->groupExpression, $dataObj);
 
@@ -103,23 +102,6 @@ class PdfReport extends \TCPDF {
                             $attrs = $group->attributes();
                             $startPage = (string) $attrs['isStartNewPage'];
 
-=======
-        if ($datacoll !== null) {
-            foreach ($datacoll as $dataObj) {
-                $this->dataObj = $dataObj;
-                $k = 0;
-
-                foreach ($this->rdata->group as $group) {
-                    $datag = $this->getFieldData($group->groupExpression, $dataObj);
-
-                    $current_group[$k] = (isset($current_group[$k])) ? $current_group[$k] : null;
-                    if ($datag) {
-
-                        if ($current_group[$k] !== $datag) {  // changement de groupe
-                            $attrs = $group->attributes();
-                            $startPage = (string) $attrs['isStartNewPage'];
-
->>>>>>> Stashed changes
                             if ($current_group[$k]) {
                                 $this->dataObj = $previousDataObj;
                                 $this->generateGroupItem('groupFooter', $group->groupFooter);
@@ -146,17 +128,10 @@ class PdfReport extends \TCPDF {
                 $this->generateGroupItem('detail', null, $maxY);
                 $i++;
                 $previousDataObj = $dataObj;
-<<<<<<< Updated upstream
             }
         }
         if (count($this->rdata->group)) {
             $this->generateGroupItem('groupFooter', $this->rdata->group->groupFooter);
-=======
-            }
-            if (count($this->rdata->group)) {
-                $this->generateGroupItem('groupFooter', $this->rdata->group->groupFooter);
-            }
->>>>>>> Stashed changes
         }
         $this->dataObj = $this->data;
         $this->generateGroup('columnFooter', $this->rdata->columnFooter);
