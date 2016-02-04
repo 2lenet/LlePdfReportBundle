@@ -211,9 +211,11 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateItem($key, $item) {
-        //print "generateItem key=" . $key . "<br />";
+        $noprint = (isset($item['no-print']) and $item['no-print']);
         $method = "generate" . ucfirst($key);
+        if($noprint) $this->startLayer('no-print',false);
         $this->$method($item);
+        if($noprint) $this->endLayer();
     }
 
     public function getMaxYItem($key, $item) {
@@ -444,7 +446,6 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateImage($item) {
-
         $x = $item->reportElement['x'] + $this->decX + $this->lMargin;
         if ($item->reportElement['ignoreMargin']) {
             $y = $this->group_y + $item->reportElement['y'] + $this->tMargin + $this->bottomMargin;
@@ -557,7 +558,6 @@ class PdfReport extends \TCPDF {
 
     public function generateLine($item) {
         $bcolor = (string) $item->reportElement['forecolor'];
-        //die('--->'.$bcolor);
         $y = $this->group_y + $item->reportElement['y'] + $this->tMargin;
         $x = $item->reportElement['x'] + $this->decX + $this->lMargin;
         $width = $item->reportElement['width'];
@@ -606,7 +606,6 @@ class PdfReport extends \TCPDF {
      * Redéfini ici car modification des header pour IE
      */
     public function Output($name = '', $dest = '') {
-        //die();
         //Output PDF to some destination
         //Finish document if necessary
         if ($this->state < 3) {
@@ -865,7 +864,7 @@ class PdfReport extends \TCPDF {
         if ($mode == 'html') {
             $pdf->writeHTMLCell(0, 0, $pdf->GetX(), $start_y, (string) $text, 0, 1);
         } else {
-            die('reste à implementer le else');
+            die('PdfReport::evaluateHeight $mode='.$mode.'. Mode prie en compt : html');
         }
 
         $end_y = $pdf->GetY();
