@@ -794,6 +794,8 @@ class PdfReport extends \TCPDF {
 
         // Transformation markdown => HTML
         $parsedown = new Parsedown();
+        $parsedown->setBreaksEnabled(true);
+
         $html = $parsedown->text($text);
 
         $tagvs = array(
