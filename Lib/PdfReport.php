@@ -211,7 +211,7 @@ class PdfReport extends \TCPDF {
     }
 
     public function generateItem($key, $item) {
-        $noprint = (isset($item['no-print']) and $item['no-print']);
+        $noprint = (isset($item->reportElement['key']) and $item->reportElement['key'] == 'noprint');
         $method = "generate" . ucfirst($key);
         if($noprint) $this->startLayer('no-print',false);
         $this->$method($item);
