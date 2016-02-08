@@ -41,6 +41,10 @@ abstract class Pdf extends \TCPDF
         $this->data = $data;
     }
 
+    public function title(){
+        return null;
+    }
+
     public function setContainer($container)
     {
         $this->container = $container;
