@@ -10,6 +10,8 @@ class PdfReport{
 
     private $container;
 
+    private $noDisplayVariable = false;
+
 
     public function __construct($container){
         $this->container = $container;
@@ -29,6 +31,10 @@ class PdfReport{
 
     public function getRootDir(){
         return $this->get('kernel')->getRootDir().'/../';
+    }
+
+    public function setNodisplayVariable($noDisplayVariable){
+        $this->noDisplayVariable = $noDisplayVariable;
     }
 
     public function getModele($code){
@@ -57,6 +63,7 @@ class PdfReport{
 
     public function getEmptyPdf(){
         $pdf = new Pdf();
+        $pdf->setFake($this->noDisplayVariable);
         $pdf->setRootPath($this->getRootDir());
         return $pdf;
     }
