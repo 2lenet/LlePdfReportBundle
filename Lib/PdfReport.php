@@ -186,7 +186,7 @@ class PdfReport extends \TCPDF {
                 //$this->maxY = $this->getY();
                 $this->newPage();
             }
-            if ($key == 'summary') {
+            if ($key == 'summary' || $key=='lastPageFooter') {
                 // alignement en bas pour le groupe summary
                 $this->group_y = $this->getPageHeight() - $this->bottomMargin - $group->band['height'];
             } else {
@@ -796,6 +796,9 @@ class PdfReport extends \TCPDF {
         $parsedown->setBreaksEnabled(true);
 
         $html = $parsedown->text($text);
+  //      print $html;
+
+    //    die();
 
         $tagvs = array(
             'h1' => array(0 => array('h' => 1, 'n' => 3), 1 => array('h' => 1, 'n' => 3)),
@@ -803,39 +806,22 @@ class PdfReport extends \TCPDF {
         );
         $this->setHtmlVSpace($tagvs);
 
-        $height = 0;
-        $buffer_chapitre = '';
-        $chapitres = preg_split("/(?=<(h[1-3]|p)>)/", $html, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+        $chapitres = preg_split("/(?<!<\/h[1-3]>\n)(?=<h[1-3]>)/m", $html, -1,  PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 
         foreach ($chapitres as $key => $chapitre) {
 
-            if ($key%2) {
-
-                /*$height_supp = ( $chapitres[$key-1] == 'p' ? 0 : 80 );
-                $height = $this->evaluateHeight('html', $chapitre) + $height_supp;*/
-
-                if( $chapitres[$key-1] != 'p' ) {
-                    $height += $this->evaluateHeight('html', $chapitre) + 80;
-                    $buffer_chapitre .= $chapitre;
-                }
-                else {
-
-                    $height += $this->evaluateHeight('html', $chapitre);
-                    $buffer_chapitre .= $chapitre;
-
-                    if ($this->getY() + $height > $this->ruptY) {
-
-                        $this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
-                        $this->newPage();
-                        $this->SetFont('helvetica');
-                        $this->SetFont('helvetica', '', 10);
-                    }
-
-                    $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $css.$buffer_chapitre, 0, 1, false, true, $align, true);
-                    $buffer_chapitre = '';
-                    $height = 0;
-                }
+            $height = $this->evaluateHeight('html', $chapitre);
+            if ($key == count($chapitres)-1) {
+                $this->ruptY -=  $this->rdata->lastPageFooter->band['height'];
             }
+
+            if ($this->getY() + $height > $this->ruptY) {
+                $this->setXY(0,$this->getPageHeight() - $this->rdata->pageFooter->band['height']- $this->bottomMargin);
+                $this->newPage();
+                $this->SetFont('helvetica');
+                $this->SetFont('helvetica', '', 10);
+            }
+            $this->writeHTMLCell($item->reportElement['width'] + 5, '', '', $this->getY() + 5, $css.$chapitre, 0, 1, false, true, $align, true);
         }
     }
 
