@@ -806,7 +806,8 @@ class PdfReport extends \TCPDF {
         );
         $this->setHtmlVSpace($tagvs);
 
-        $chapitres = preg_split("/(?<!<\/h[1-3]>\n)(?=<h[1-3]>)/m", $html, -1,  PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+        //$chapitres = preg_split("/(?<!<\/h[1-3]>\n)(?=<h[1-3]>)/m", $html, -1,  PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+        $chapitres = preg_split("/(?<!<\/h[1-3]>\n)(?=<h[1-3]>|<p>)/m", $html, -1,  PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
 
         foreach ($chapitres as $key => $chapitre) {
 
