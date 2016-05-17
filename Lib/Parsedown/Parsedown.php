@@ -132,6 +132,20 @@ class Parsedown
                 continue;
             }
 
+            // Test pour éviter que lorsque l'on remplace
+            // par une variable dynamique et qu'il n'y a pas de valeur
+            // la mise en gras se transforme en hr
+            // ex : **{adresse_comp_bien}** => **** => <hr />
+            if (in_array($line[0], $this->specialCharacters) && preg_match('/^(['.$line[0].'])([ ]*\1){2,}[ ]*$/', $line)) {
+
+                if (isset($CurrentBlock))
+                {
+                    $CurrentBlock['interrupted'] = true;
+                }
+
+                continue;                
+            }
+
             if (strpos($line, "\t") !== false)
             {
                 $parts = explode("\t", $line);
