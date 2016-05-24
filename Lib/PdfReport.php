@@ -296,8 +296,8 @@ class PdfReport extends \TCPDF {
     public function getFieldData($exp, $obj, $pattern = '') {
         if (!$obj)
             return "";
-        $field = preg_filter('/{([a-zA-Z_.]*)}/', "$1", $exp);
-        $vars = preg_filter('/#([a-zA-Z_.]*)#/', "$1", $exp);
+        $field = preg_filter('/{([a-zA-Z0-9_.]*)}/', "$1", $exp);
+        $vars = preg_filter('/#([a-zA-Z0-9_.]*)#/', "$1", $exp);
         if ($vars) {
             return @$this->vars[$vars];
         }
@@ -782,7 +782,8 @@ class PdfReport extends \TCPDF {
 
         // Remplacement de variable dans le texte
         $text = preg_replace_callback(
-                '/({[a-zA-Z_.]*})((_format_({[a-zA-Z_.]*}))?)/', function ($matches) {
+
+                '/({[a-zA-Z0-9_.]*})/', function ($matches) {
                     if($this->fake) {
                         return (string) $matches[0];
                     }
