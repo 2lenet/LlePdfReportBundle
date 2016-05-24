@@ -782,7 +782,7 @@ class PdfReport extends \TCPDF {
 
         // Remplacement de variable dans le texte
         $text = preg_replace_callback(
-                '/({[a-zA-Z_.]*})/', function ($matches) {
+                '/({[a-zA-Z_.]*})((_format_({[a-zA-Z_.]*}))?)/', function ($matches) {
                     if($this->fake) {
                         return (string) $matches[0];
                     }
@@ -791,14 +791,23 @@ class PdfReport extends \TCPDF {
                 $html->htmlContentExpression
         );
 
+        /*$text = preg_replace_callback(
+                '/({[a-zA-Z_.]*})((_format_({[a-zA-Z_.]*}))?)/', function ($matches) {
+                    if($this->fake) {
+                        return (string) $matches[0];
+                    }
+                    return $this->getFieldData((string) $matches[0], $this->dataObj, '');
+                },
+                $html->htmlContentExpression
+        ); */
+
         // Transformation markdown => HTML
         $parsedown = new Parsedown();
         $parsedown->setBreaksEnabled(true);
 
         $html = $parsedown->text($text);
-  //      print $html;
-
-    //    die();
+        //print $html;
+        //die();
 
         $tagvs = array(
             'h1' => array(0 => array('h' => 1, 'n' => 3), 1 => array('h' => 1, 'n' => 3)),
@@ -811,6 +820,7 @@ class PdfReport extends \TCPDF {
 
         foreach ($chapitres as $key => $chapitre) {
 
+            $chapitre = preg_replace('/(<h[2|3]>)/', '<br />\1', $chapitre);
             $height = $this->evaluateHeight('html', $chapitre);
             if ($key == count($chapitres)-1) {
                 $this->ruptY -=  $this->rdata->lastPageFooter->band['height'];
