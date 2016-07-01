@@ -43,7 +43,7 @@ class PdfGenerator
                 }else{
                     $pdf->setData($this->data);
                     $pdf->setContainer($this->container);
-                    $pdf->init();
+                    $pdf->initiate();
                     $pdf->generate();
                 }
                 $pdf->setTitle($pdf->title());

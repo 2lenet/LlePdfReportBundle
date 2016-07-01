@@ -20,6 +20,10 @@ abstract class Pdf extends \TCPDF
         return;
     }
 
+    public function initiate(){
+        return $this->init();
+    }
+
     protected function log($str)
     {
         if ($this->debug == true) {
@@ -33,6 +37,7 @@ abstract class Pdf extends \TCPDF
             return $this->hexaToArrayColor($colors[$c]);
         }
         if($c == 'default') return $this->hexaToArrayColor('000000');
+        if($c == 'strong') return $this->hexaToArrayColor('000000');
         return $this->hexaToArrayColor(str_replace("#", "", $c));
     }
 
@@ -249,10 +254,17 @@ abstract class Pdf extends \TCPDF
         $this->rectangle($w, $weight, $x, $y,$color);
     }
 
+    protected function traceVline($x,$options = array()){
+        $h = $this->getPageHeight();
+        $weight = (isset($options['weight']))? $options['weight']:0.5;
+        $color = (isset($options['color']))? $options['color']:'default';
+        $this->rectangle($weight, $h, $x, 0, $color);
+    }
+
+    //deprecated
     protected function traceVligne($x,$options = array())
     {
-        $h = $this->getPageHeight();
-        $this->rectangle(0.5, $h, $x, 0, 'default');
+        $this->traceVline($x,$options);
     }
 
     protected function square($size, $x, $y, $c)
@@ -272,5 +284,12 @@ abstract class Pdf extends \TCPDF
             $originalHeight = $originalHeight * $ratio;
         }
         return array($originalWidth,$originalHeight);
+    }
+
+    protected function showGrid($size = 5){
+        for($i = 0;$i < 100;$i++) {
+            $this->traceHLine($i*$size,['weight'=>($i%5)? 0.2:0.4,'color'=>($i%5)? 'default':'strong']);
+            $this->traceVLine($i*$size,['weight'=>($i%5)? 0.2:0.4,'color'=>($i%5)? 'default':'strong']);
+        }
     }
 }
