@@ -56,13 +56,7 @@ class PdfReport extends \TCPDF {
     public function load($xml_report_string) {
         $this->rdata  = new \SimpleXMLElement($xml_report_string);
         $this->setPageUnit('pt');
-        if ((intval($this->rdata['pageWidth'])) > (intval($this->rdata['pageHeight'])))
-            $orientation = 'L';
-        else
-            $orientation = 'P';
-        $format = array(intval($this->rdata['pageWidth']), intval($this->rdata['pageHeight']));
         $this->decX = 0;
-        $this->setPageFormat($format,$orientation);
         $this->setPageUnit('pt');
         $this->setMargins(intval($this->rdata['leftMargin']), 0, intval($this->rdata['rightMargin']), 1);
         $this->bottomMargin = intval($this->rdata['bottomMargin']);
@@ -78,6 +72,12 @@ class PdfReport extends \TCPDF {
 
     public function generate($data, $datacoll) {
         $this->initPage($data, $datacoll);
+        if ((intval($this->rdata['pageWidth'])) > (intval($this->rdata['pageHeight'])))
+            $orientation = 'L';
+        else
+            $orientation = 'P';
+        $format = array(intval($this->rdata['pageWidth']), intval($this->rdata['pageHeight']));
+        $this->setPageFormat($format,$orientation);
         $this->generateGroup('title', $this->rdata->title);
         $this->generateGroup('pageHeader', $this->rdata->pageHeader);
         $this->generateGroup('columnHeader', $this->rdata->columnHeader);
