@@ -86,6 +86,7 @@ class PdfReport extends \TCPDF {
         $count = count($this->dataColl);
         $current_group = array();
         $previousDataObj = Null;
+        $current_group_header = null;
 
         if($datacoll != null) {
             foreach ($datacoll as $dataObj) {
@@ -99,6 +100,7 @@ class PdfReport extends \TCPDF {
                     if ($datag) {
 
                         if ($current_group[$k] !== $datag) {  // changement de groupe
+
                             $attrs = $group->attributes();
                             $startPage = (string) $attrs['isStartNewPage'];
 
@@ -112,6 +114,8 @@ class PdfReport extends \TCPDF {
                             }
 
                             $this->generateGroupItem('groupHeader', $group->groupHeader);
+                            $current_group_header['group'] = $group->groupHeader;
+                            $current_group_header['dataObj'] = $dataObj;
                             $current_group[$k] = $datag;
                             for ($i = $k + 1; $i < count($current_group); $i++)
                                 $current_group[$i] = null;
@@ -125,7 +129,7 @@ class PdfReport extends \TCPDF {
                 } else {
                     $maxY = 0;
                 }
-                $this->generateGroupItem('detail', null, $maxY);
+                $this->generateGroupItem('detail', null, $maxY, $current_group_header);
                 $i++;
                 $previousDataObj = $dataObj;
             }
@@ -150,7 +154,7 @@ class PdfReport extends \TCPDF {
         $this->generateGroupItem($key, $group);
     }
 
-    public function newPage() {
+    public function newPage($current_group_header = null) {
         //print "newPage";
         $obj = $this->dataObj;
         $this->dataObj = $this->data;
@@ -160,10 +164,14 @@ class PdfReport extends \TCPDF {
         $this->AddPage();
         $this->SetXY(0, 0);
         $this->generateGroup('pageHeader', $this->rdata->pageHeader);
+        if($current_group_header != null) {
+            $this->dataObj = $current_group_header['dataObj'];
+            $this->generateGroupItem('groupHeader', $current_group_header['group']);
+        }
         $this->dataObj = $obj;
     }
 
-    public function generateGroupItem($key, $group = null, $maxY = 0) {
+    public function generateGroupItem($key, $group = null, $maxY = 0, $current_group_header = null) {
         //print "generateGroupItem key=$key<br />";
         if (!$group)
             $group = $this->rdata->$key;
@@ -184,7 +192,7 @@ class PdfReport extends \TCPDF {
             //print "key=".$key."-Y:" . $this->getY()."<br />";
             if ($this->getY() > $this->ruptY && $key == "detail") { //columnFooter" && $key !="pageFooter" && $key !="summary") {
                 //$this->maxY = $this->getY();
-                $this->newPage();
+                $this->newPage($current_group_header);
             }
             if ($key == 'summary' || $key=='lastPageFooter') {
                 // alignement en bas pour le groupe summary
