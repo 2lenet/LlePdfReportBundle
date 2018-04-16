@@ -7,12 +7,15 @@ PDF normal (joris):
 
 
 Cree le service:
+```yaml
 lle_alef.pdf_agenda:
     class:        Lle\PdfReportBundle\Service\PdfGenerator
     arguments:    ['@service_container',Lle\AlefBundle\Utils\Pdf\Agenda]
+```
 
 Cree votre class (ici Lle\AlefBundle\Utils\Pdf\Agenda):
 
+```php
 <?php
 class Agenda extends Lle\PdfReportBundle\Lib\Pdf{
     protected $debug = false; private $user;
@@ -31,19 +34,26 @@ class Agenda extends Lle\PdfReportBundle\Lib\Pdf{
     //public function footer(){}
     //public function header(){}
 }
-
+```
 Dans votre controleur:
+
+```php
+<?php
 $pdf = $this->get('lle_alef.pdf_agenda');
 $pdf->setData(array('user'=>$user));
 $pdf->show();
+```
 
 Pour crée plusieur page a partire d'un PDF (par exemple liste de contrat) vous devez juste ajouter les data avec addIterableData, les data ajouter avec setData sont toujours disponible mais sont les meme pour tous les PDF:
 
 Dans votre controleur:
+```php 
+<?php
 $pdf = $this->get('lle_alef.pdf_agenda');
 $pdf->setData(array('user'=>$user));
 foreach($contrats as $contrat) $pdfAgenda->addIterateData(array('contrat'=>$contrat));
 $pdfAgenda->show();
+```
 
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
