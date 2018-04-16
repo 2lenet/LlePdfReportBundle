@@ -48,19 +48,30 @@ $pdfAgenda->show();
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
+
 PDF report (joris):
+
 Ajouter les modeles a la bdd (Ne fonctionne qu'avec le chemain data/report):
+```
 php app/console lle:pdfreport:sync
+```
 
 appeler le modele
+
+```php 
+<?php
 $this->get('lle_pdf_report')->getResponse('code_modele',$objet,$iterable); //return reponse BinaryFileResponse
+```
 
 il existe les methodes suivante:
+```php
+<?php
 getPdfFile($code, $obj, $iterable = null,$filepath = null) // returne un fichier sous forme de filepath
 getEmptyPdf() // return un PDF vide
 getPdf($code,$obj,$iterable = null,$pdf = null) // return un TCPDF
 
-Itération: (uniquement avec la sorti TCPDF)
+//Itération: (uniquement avec la sorti TCPDF)
 $pdf = $service->getEmptyPdf();
 foreach($coll as $elm) $pdf = $service->getPdf('code',$elm,$elm->getColl(),$pdf);
 $pdf->output();
+```
