@@ -304,8 +304,12 @@ class PdfReport extends \TCPDF {
     public function getFieldData($exp, $obj, $pattern = '') {
         if (!$obj)
             return "";
-        $field = preg_filter('/{([a-zA-Z0-9_.]*)}/', "$1", $exp);
+        $field = preg_filter('/{([a-zA-Z_.]*)}(\$([0-9a-zA-Z_.-]*)\$)?/', "$1", $exp);
         $vars = preg_filter('/#([a-zA-Z0-9_.]*)#/', "$1", $exp);
+        $args = preg_filter('/{([a-zA-Z_.]*)}(\$([0-9a-zA-Z_.-]*)\$)?/', "$3", $exp); 
+        // print "field:" . $field."<br />";
+        // print $vars."<br />";
+        // print "args:" . $args."<br />";
         if ($vars) {
             return @$this->vars[$vars];
         }
@@ -356,9 +360,8 @@ class PdfReport extends \TCPDF {
                 return $data;
             }
             $method = 'get' . $this->to_camel_case($field);
-
             if (method_exists($obj, $method)) {
-                $data = call_user_func(array($obj, $method));
+                $data = call_user_func(array($obj, $method), $args);
             } else {
                 if(is_object($obj)){
                     $data = get_class($obj) . '->' . $method; //. '-' . $e;
@@ -394,7 +397,7 @@ class PdfReport extends \TCPDF {
         } else {
             $this->item = $item;
             $data = preg_replace_callback(
-                '/({[a-zA-Z_.]*})/',
+                '/({[a-zA-Z0-9_.]*}(\$([0-9a-zA-Z_.-]*)\$)?)/',
                 function ($matches) {
                     $elm = $this->getFieldData((string) $matches[0], $this->dataObj, $this->item['pattern']);
                     if($elm instanceof \DateTime){
