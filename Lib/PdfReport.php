@@ -306,7 +306,7 @@ class PdfReport extends \TCPDF {
             return "";
         $field = preg_filter('/{([a-zA-Z_.]*)}(\$([0-9a-zA-Z_.-]*)\$)?/', "$1", $exp);
         $vars = preg_filter('/#([a-zA-Z0-9_.]*)#/', "$1", $exp);
-        $args = preg_filter('/{([a-zA-Z_.]*)}(\$([0-9a-zA-Z_.-]*)\$)?/', "$3", $exp); 
+        $args = preg_filter('/{([a-zA-Z_.]*)}(\$([0-9a-zA-Z_.-]*)\$)?/', "$3", $exp);
         // print "field:" . $field."<br />";
         // print $vars."<br />";
         // print "args:" . $args."<br />";
@@ -473,8 +473,11 @@ class PdfReport extends \TCPDF {
             },
             $item->imageExpression
         );
-
-        $image_name = basename(str_replace('\\\\', "/", str_replace('"', '', $data)));
+        if(count(explode('/', $data)) > 2){
+            $image_name = $data;
+        }else{
+            $image_name = basename(str_replace('\\', "/", str_replace('"', '', $data)));
+        }
         if($this->rootPath){
             //ici on pense à gagner du temps dans le future
             $where = array('data/report/images','web/images','data/images','data/report/images','data/report','web');
@@ -488,7 +491,7 @@ class PdfReport extends \TCPDF {
             if($image){
                 $this->Image($image, $x, $y, $item->reportElement['width']);
             }else{
-                throw new \Exception($image_name.' not found in '.implode(',',$where));
+                //throw new \Exception($image_name.' not found in '.implode(',',$where));
             }
         }else{
             //ici on n'y a pas pensé ... good luck
