@@ -426,6 +426,7 @@ class PdfReport extends \TCPDF {
     public function setFontStyle($item) {
         $size = 10;
         $style = '';
+        $fontName = 'helvetica';
         if ($item->textElement) {
             if ($item->textElement->font['size']) {
                 $size = $item->textElement->font['size'];
@@ -440,8 +441,11 @@ class PdfReport extends \TCPDF {
             if ($item->textElement->font['isItalic'] == 'true') {
                 $style .='I';
             }
+            if($item->textElement->font['pdfFontName']) {
+                $fontName = $item->textElement->font['pdfFontName'];
+            }
         }
-        $this->setFont('helvetica', $style, $size);
+        $this->setFont($fontName, $style, $size);
     }
 
     public function getAlign($item) {
