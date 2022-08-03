@@ -414,7 +414,14 @@ class PdfReport extends \TCPDF {
         $this->setFontStyle($item);
         $align = $this->getAlign($item);
         $y = $this->getY();
-        $nb = $this->MultiCell($item->reportElement['width'] + 2, $item->reportElement['height'] + 2, $data, 0, $align, 0, 0);
+        
+        $isHtml = false;
+        if($data != strip_tags($data)) {
+            $isHtml = true;
+        }
+
+        $nb = $this->MultiCell($item->reportElement['width'] + 2, $item->reportElement['height'] + 2, $data, 0, $align, 0, 0, '', '', true, 0, $isHtml);
+        
         if (trim($data)) {
             $height = $this->getStringHeight($item->reportElement['width'] + 2, $data);
         } else {
